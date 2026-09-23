@@ -450,25 +450,11 @@ With new cards and factions!" />
     document.addEventListener("DOMContentLoaded", scheduleApply);
     window.addEventListener("load", scheduleApply);
 
-    const observer = new MutationObserver(function () {
-        scheduleApply();
-    });
-
-    function startObserver() {
-        observer.observe(document.body, {
-            subtree: true,
-            attributes: true,
-            attributeFilter: ["style", "class"]
-        });
-        scheduleApply();
-    }
-
-    if (document.body) {
-        startObserver();
-    } else {
-        document.addEventListener("DOMContentLoaded", startObserver, { once: true });
-    }
+    // Re-apply periodically because the game changes inline styles during startup.
+    window.setInterval(apply, 1000);
+    scheduleApply();
 })();
+
 </script>
 <script>
 function random_string_gen(){
