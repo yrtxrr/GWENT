@@ -8262,40 +8262,28 @@ var iniciou = false,
   isLoaded = false;
 // window.onload = async function () {
 async function postscripinit() {
-  if (debuglunchcustomcards) {
-    document.getElementById("load_text").style.display = "none";
-    document.getElementById("button_start").style.display = "inline-block";
-    customizationElem.style.display = "";
-    document.getElementById("toggle-music").style.display = "";
-    document.getElementsByTagName("main")[0].style.display = "";
-    document
-      .getElementById("button_start")
-      .addEventListener("click", function () {
-        inicio();
-        if (ui.getAudioState() !== 1 && !youtubeInitializing) {
-          youtubeInitializing = true;
-          //  ui//.initYouTube();// unused
-        }
-        // cache audio:
-        try {
-          console.log("[sfx] In init: loadPackedSFX()");
-          loadPackedSFX();
-        } catch (e) {
-          console.log("[sfx] In init: loadPackedSFX(); err", e);
-        }
-      });
-    isLoaded = true;
-  } else {
-    loadingscreenupdate(`Waiting for card builds...`);
-    try {
-      await custom_card_builder_init();
-    } catch (e) {
-      warn_screen(
-        "Fatal error at custom_card_builder_init()\n\nGame failed to lunch\n\nCheck console for more!",
-      );
-      console.error("FATAL", e);
-    }
+  // Reveal the game UI immediately. Card building/music must never block startup.
+  const loadText = document.getElementById("load_text");
+  const startButton = document.getElementById("button_start");
+  if (loadText) loadText.style.display = "none";
+  if (startButton) startButton.style.display = "inline-block";
+  if (typeof customizationElem !== "undefined" && customizationElem) customizationElem.style.display = "";
+  const musicToggle = document.getElementById("toggle-music");
+  if (musicToggle) musicToggle.style.display = "";
+  const mainElem = document.getElementsByTagName("main")[0];
+  if (mainElem) mainElem.style.display = "";
+  isLoaded = true;
+
+  // Build custom cards in the background; failure must not prevent the menu from opening.
+  try {
+    Promise.resolve(custom_card_builder_init()).catch((e) => {
+      console.error("Custom card builder failed in background:", e);
+    });
+  } catch (e) {
+    console.error("Could not start custom card builder:", e);
   }
+
+  console.log("postscripinit finished; game UI is available");
 }
 
 async function loadYTByEval() {
@@ -8318,8 +8306,9 @@ async function lunch_gwent_ui() {
   loadingscreenupdate(`I am a bucket...`);
   init_bucket();
   loadingscreenupdate(`Loading music...`);
-  await loadYTByEval();
-  console.log("YouTube API is ready!");
+  loadYTByEval()
+    .then(() => console.log("YouTube API is ready!"))
+    .catch((e) => console.warn("YouTube API unavailable; continuing without music:", e));
   loadingscreenupdate(`Running lunch_gwent_ui()...`);
 
   // await sleep(1300); // Tryin to fix double audio lunch
