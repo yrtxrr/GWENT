@@ -391,6 +391,44 @@ With new cards and factions!" />
 </div>
 
 <script>
+(function fitMobileGame() {
+    function apply() {
+        if (!window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches) {
+            return;
+        }
+
+        const width = window.innerWidth;
+        const vv = window.visualViewport;
+        const height = vv ? vv.height : window.innerHeight;
+        const boardHeight = width * 9 / 16;
+        const scale = Math.min(1, height / boardHeight);
+
+        const targets = [
+            document.getElementById("dimensions"),
+            document.querySelector("main"),
+            document.getElementById("carousel"),
+            document.getElementById("popup"),
+            document.getElementById("end-screen")
+        ];
+
+        targets.forEach(function (el) {
+            if (el) el.style.transform = "scale(" + scale + ")";
+        });
+
+        document.documentElement.style.setProperty("--mobile-game-scale", scale);
+    }
+
+    window.addEventListener("resize", apply);
+    window.addEventListener("orientationchange", function () {
+        setTimeout(apply, 100);
+    });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", apply);
+    }
+    document.addEventListener("DOMContentLoaded", apply);
+})();
+</script>
+<script>
 function random_string_gen(){
 	return Math.random().toString(36).substring(2, 10);
 }
