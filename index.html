@@ -392,12 +392,14 @@ With new cards and factions!" />
 
 <script>
 (function fitMobileGame() {
+    let lastScale = null;
+
     function apply() {
         if (!window.matchMedia("(max-width: 900px) and (orientation: landscape)").matches) {
             return;
         }
 
-        const width = window.innerWidth;
+        const width = document.documentElement.clientWidth || window.innerWidth;
         const vv = window.visualViewport;
         const height = vv ? vv.height : window.innerHeight;
         const boardHeight = width * 9 / 16;
@@ -412,20 +414,60 @@ With new cards and factions!" />
         ];
 
         targets.forEach(function (el) {
-            if (el) el.style.transform = "scale(" + scale + ")";
+            if (!el) return;
+            el.style.setProperty("width", "100vw", "important");
+            el.style.setProperty("height", "calc(100vw * 9 / 16)", "important");
+            el.style.setProperty("transform-origin", "top left", "important");
+            el.style.setProperty("transform", "scale(" + scale + ")", "important");
         });
 
         document.documentElement.style.setProperty("--mobile-game-scale", scale);
+
+        if (lastScale !== scale) {
+            lastScale = scale;
+            console.log("[MOBILE FIT] viewport:", width, height, "scale:", scale);
+        }
     }
 
-    window.addEventListener("resize", apply);
-    window.addEventListener("orientationchange", function () {
-        setTimeout(apply, 100);
-    });
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", apply);
+    function scheduleApply() {
+        apply();
+        requestAnimationFrame(apply);
+        setTimeout(apply, 50);
+        setTimeout(apply, 250);
+        setTimeout(apply, 700);
     }
-    document.addEventListener("DOMContentLoaded", apply);
+
+    window.addEventListener("resize", scheduleApply);
+    window.addEventListener("orientationchange", function () {
+        setTimeout(scheduleApply, 100);
+    });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", scheduleApply);
+        window.visualViewport.addEventListener("scroll", scheduleApply);
+    }
+
+    document.addEventListener("DOMContentLoaded", scheduleApply);
+    window.addEventListener("load", scheduleApply);
+
+    const observer = new MutationObserver(function () {
+        scheduleApply();
+    });
+
+    function startObserver() {
+        observer.observe(document.body, {
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["style", "class"]
+        });
+        scheduleApply();
+    }
+
+    if (document.body) {
+        startObserver();
+    } else {
+        document.addEventListener("DOMContentLoaded", startObserver, { once: true });
+    }
 })();
 </script>
 <script>
