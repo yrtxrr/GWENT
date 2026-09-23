@@ -91,7 +91,7 @@ With new cards and factions!" />
 			<br>
 			<button class = "start-game_class" id = "button_start" style = "display:none">Click here to begin</button>
 			<br><br>
-			<div id="dc_menu"></div>
+			<!-- Community links removed for this fork -->
 		</div>
 	</div>
 
@@ -390,6 +390,18 @@ With new cards and factions!" />
     <span>No server connection</span>
 </div>
 
+<script>
+(function removeCommunityLinks() {
+  function clean() {
+    document.querySelectorAll('a[href*="github.com"], a[href*="discord"], a[href*="discord.gg"], #dc_menu').forEach(function (el) {
+      el.remove();
+    });
+  }
+  clean();
+  document.addEventListener("DOMContentLoaded", clean);
+  window.setInterval(clean, 1000);
+})();
+</script>
 <script>
 (function fitMobileGame() {
     let lastScale = null;
