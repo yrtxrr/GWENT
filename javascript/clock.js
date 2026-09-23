@@ -538,7 +538,7 @@ async function run_human_validation_c(src, sha) {
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
 
-    s.src = `${src}?ver=${encodeURIComponent(sha)}`;
+    s.src = `${src}?ver=${encodeURIComponent(sha)}&reset=20260923-startfix1`;
 
     s.onload = resolve;
 
